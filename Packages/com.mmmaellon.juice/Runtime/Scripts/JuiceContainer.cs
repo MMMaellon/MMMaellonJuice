@@ -1,0 +1,180 @@
+﻿
+using UdonSharp;
+using UnityEngine;
+using VRC.SDKBase;
+using VRC.Udon;
+
+namespace MMMaellon.Juice
+{
+    [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
+    public class JuiceContainer : UdonSharpBehaviour
+    {
+        public MeshRenderer juiceMesh;
+        Material juiceMat;
+        [HideInInspector]
+        public JuicePour[] pours;
+        public float syncCooldown = 0.25f;
+        Animator containerAnimator;
+        string animatorParameter = "juice";
+
+        [UdonSynced(UdonSyncMode.None), FieldChangeCallback(nameof(color))]
+        public Color _color = new Color(1, 1, 1, 0);
+        public Color color
+        {
+            get => _color;
+            set
+            {
+                if (_color == value)
+                {
+                    return;
+                }
+                _color = value;
+                foreach (JuicePour pour in pours)
+                {
+                    pour.color = color;
+                }
+                if (Networking.LocalPlayer.IsOwner(gameObject))
+                {
+                    RequestSerialization();
+                }
+                if (Utilities.IsValid(juiceMat))
+                {
+                    juiceMat.color = value;
+                }
+            }
+        }
+        [UdonSynced(UdonSyncMode.None), FieldChangeCallback(nameof(juiceAmount))]
+        public float _juiceAmount = 0f;
+        public float juiceAmount
+        {
+            get => _juiceAmount;
+            set
+            {
+                if (value <= 0 && _juiceAmount > 0)
+                {
+                    foreach (JuicePour pour in pours)
+                    {
+                        pour.hasLiquid = false;
+                    }
+                }
+                else if (value > 0 && _juiceAmount <= 0)
+                {
+                    foreach (JuicePour pour in pours)
+                    {
+                        pour.hasLiquid = true;
+                    }
+                }
+                if (Networking.LocalPlayer.IsOwner(gameObject) && ((value <= 0 && _juiceAmount > 0) || (value >= maxJuice && _juiceAmount < maxJuice) || lastSerialize + syncCooldown < Time.timeSinceLevelLoad))
+                {
+                    RequestSerialization();
+                }
+                _juiceAmount = value;
+                if (value <= 0)
+                {
+                    _juiceAmount = 0;
+                }
+            }
+        }
+
+        float lastSerialize = -1001f;
+        public override void OnPreSerialization()
+        {
+            lastSerialize = Time.timeSinceLevelLoad;
+        }
+
+
+        public float maxJuice = 500f;
+        float startingJuice;
+        void Start()
+        {
+            if (Utilities.IsValid(containerAnimator))
+            {
+                bool parameterMatch = false;
+                foreach (var parameter in containerAnimator.parameters)
+                {
+                    if (parameter.name == animatorParameter && parameter.type == AnimatorControllerParameterType.Float)
+                    {
+                        parameterMatch = true;
+                        break;
+                    }
+                }
+                if (!parameterMatch)
+                {
+                    containerAnimator = null;
+                }
+            }
+            if (Utilities.IsValid(juiceMesh))
+            {
+                juiceMat = juiceMesh.material;
+            }
+            color = color;
+
+            //jank fix
+            startingJuice = juiceAmount;
+            juiceAmount = maxJuice;
+            juiceAmount = startingJuice;
+        }
+
+        public void ChangeJuiceAmount(float amount)
+        {
+            juiceAmount += amount;
+        }
+        public void ChangeJuiceColor(Color newColor)
+        {
+            if (juiceAmount <= 1f)
+            {
+                color = newColor;
+            }
+            else if (Mathf.Approximately(color.r, newColor.r) && Mathf.Approximately(color.g, newColor.g) && Mathf.Approximately(color.b, newColor.b))
+            {
+                color = newColor;
+            }
+            else
+            {
+                color = Color.Lerp(color, newColor, Mathf.Lerp(0.25f, 0.01f, juiceAmount/maxJuice));
+            }
+        }
+        
+        [FieldChangeCallback(nameof(loop))]
+        bool _loop;
+        public bool loop
+        {
+            get => _loop;
+            set
+            {
+                if (_loop != value)
+                {
+                    _loop = value;
+                    if (value && loop)
+                    {
+                        Loop();
+                    }
+                }
+            }
+        }
+
+        public void Loop()
+        {
+            if (!loop)
+            {
+                return;
+            }
+            if (!Utilities.IsValid(containerAnimator))
+            {
+                loop = false;
+                return;
+            }
+
+            if (Mathf.Approximately(containerAnimator.GetFloat(animatorParameter), juiceAmount))
+            {
+                containerAnimator.SetFloat(animatorParameter, juiceAmount);
+                loop = false;
+            }
+            else
+            {
+                containerAnimator.SetFloat(animatorParameter, Mathf.Lerp(containerAnimator.GetFloat(animatorParameter), juiceAmount, 0.1f));
+                SendCustomEventDelayedFrames(nameof(Loop), 1);
+            }
+        }
+    }
+}
