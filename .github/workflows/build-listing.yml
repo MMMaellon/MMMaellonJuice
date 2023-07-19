@@ -1,7 +1,7 @@
 name: Build Repo Listing
 
 env:
-  CurrentPackageName: com.mmmaellon.p-shooters
+  CurrentPackageName: com.mmmaellon.juice
   listPublishDirectory: Website
   pathToCi: ci
   

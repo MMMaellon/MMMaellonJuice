@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches: main
-    paths: Packages/com.mmmaellon.p-shooters/**
+    paths: Packages/com.mmmaellon.juice/**
 
 env:
-  packageName: "com.mmmaellon.p-shooters"
+  packageName: "com.mmmaellon.juice"
 
 permissions:
   contents: write
