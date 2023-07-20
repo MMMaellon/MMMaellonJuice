@@ -53,7 +53,6 @@ namespace MMMaellon.Juice
 
         public void Loop()
         {
-            Debug.LogWarning("Loop");
             if (!loop)
             {
                 return;
