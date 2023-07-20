@@ -24,7 +24,7 @@ namespace MMMaellon.Juice
                 {
                     pour.hasLiquid = true;
                     pour.TurnOn();
-                    pour.MoveWaterDown();
+                    // pour.MoveWaterDown();
                 }
                 if (Networking.LocalPlayer.IsOwner(gameObject))
                 {
@@ -45,7 +45,7 @@ namespace MMMaellon.Juice
                     _loop = value;
                     if (value)
                     {
-                        Loop();
+                        SendCustomEventDelayedFrames(nameof(Loop), 1);
                     }
                 }
             }
@@ -53,12 +53,12 @@ namespace MMMaellon.Juice
 
         public void Loop()
         {
-            if (!loop)
+            if (!loop || !startRan)
             {
                 return;
             }
 
-            if (Mathf.Approximately(pour.power, _syncedValve) || pour.power <= 0.1f)
+            if (Mathf.Approximately(pour.power, _syncedValve) || (pour.power <= pour.minimumPourAmount && _syncedValve <= 0))
             {
                 pour.power = _syncedValve;
                 if (Mathf.Approximately(0f, _syncedValve))
@@ -104,10 +104,12 @@ namespace MMMaellon.Juice
             valve = value;
         }
 
+        bool startRan = false;
         public void Start()
         {
+            startRan = true;
             valve = _syncedValve;
-            pour.enabled = false;
+            pour.loop = false;
         }
     }
 }

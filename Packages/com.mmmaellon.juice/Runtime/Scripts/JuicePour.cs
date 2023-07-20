@@ -27,7 +27,7 @@ namespace MMMaellon.Juice
         public float minimumPourAmount = 0.1f;
         public float pourAngleShifting = 60f;
         public Collider[] receiverColliders;
-        [System.NonSerialized]
+        [System.NonSerialized, FieldChangeCallback(nameof(power))]
         public float _power = 0;
         ParticleSystem.MinMaxCurve startSize;
         ParticleSystem.MinMaxCurve startSpeed;
@@ -177,9 +177,7 @@ namespace MMMaellon.Juice
             if (Utilities.IsValid(parentSync))
             {
                 parentSync.AddListener(this);
-            } else
-            {
-                loop = true;
+                loop = false;
             }
 
             startRan = true;
@@ -195,7 +193,7 @@ namespace MMMaellon.Juice
         bool tippedChanged;
 
         [System.NonSerialized, FieldChangeCallback(nameof(loop))]
-        public bool _loop = false;
+        public bool _loop = true;
         public bool loop
         {
             get => _loop;
@@ -289,6 +287,7 @@ namespace MMMaellon.Juice
 
         public void MoveWaterDown()
         {
+            Debug.LogWarning("Move Water Down " + power);
             projectedDown = particles.transform.InverseTransformDirection(Vector3.ProjectOnPlane(Vector3.down, particles.transform.forward));
             projectedDown = (particles.transform.localRotation * projectedDown.normalized * (1 - power) / 40);//hardcoded
             projectedDown.x = particles.transform.localScale.x != 0 ? projectedDown.x / particles.transform.localScale.x : projectedDown.x;
