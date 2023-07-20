@@ -13,18 +13,25 @@ namespace MMMaellon.Juice
         Material mat;
         public Color color
         {
-            get => _color;
+            get => Utilities.IsValid(altColorSource) ? altColorSource.color : _color;
             set
             {
-                _color = value;
-                if (!startRan)
+                if (Utilities.IsValid(altColorSource))
                 {
-                    return;
+                    altColorSource.color = value;
+                } else
+                {
+                    _color = value;
+                    if (!startRan)
+                    {
+                        return;
+                    }
+                    mat.color = value;
                 }
-                mat.color = value;
-                mat.SetFloat("_Metallic", value.a);
             }
         }
+
+        public JuiceContainer altColorSource;
 
         bool startRan = false;
         void Start()
