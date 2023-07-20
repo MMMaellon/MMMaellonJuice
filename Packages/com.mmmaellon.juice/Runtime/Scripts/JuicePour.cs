@@ -6,7 +6,7 @@ using VRC.Udon;
 
 namespace MMMaellon.Juice
 {
-    public class JuicePour : UdonSharpBehaviour
+    public class JuicePour : SmartObjectSyncListener
     {
         public ParticleSystem particles;
         public ParticleSystem splashParticles;
@@ -133,12 +133,24 @@ namespace MMMaellon.Juice
             }
         }
 
-        public bool hasLiquid = true;
+        public bool _hasLiquid = true;
+        public bool hasLiquid{
+            get => _hasLiquid;
+            set
+            {
+                _hasLiquid = value;
+                if (!value)
+                {
+                    TurnOff();
+                }
+            }
+        }
         float newAngle;
         VRCPlayerApi localPlayer;
         ParticleSystemRenderer render;
         ParticleSystemRenderer splashRender;
         Vector3 startLocalPos;
+        public SmartObjectSync parentSync;
         void Start()
         {
             main = particles.main;
@@ -162,26 +174,52 @@ namespace MMMaellon.Juice
             {
                 col.enabled = true;
             }
+            if (Utilities.IsValid(parentSync))
+            {
+                parentSync.AddListener(this);
+            } else
+            {
+                loop = true;
+            }
 
             startRan = true;
             power = power;
             color = color;
+            Loop();
         }
 
         Vector3 projectedDown;
         bool overflow;
         bool tipped;
-        public void Update()
-        {
-            Loop();
-        }
         bool overflowChanged;
         bool tippedChanged;
+
+        [System.NonSerialized, FieldChangeCallback(nameof(loop))]
+        public bool _loop = false;
+        public bool loop
+        {
+            get => _loop;
+            set
+            {
+                if (_loop != value)
+                {
+                    _loop = value;
+                    if (value && loop)
+                    {
+                        SendCustomEventDelayedFrames(nameof(Loop), 1);
+                    }
+                }
+            }
+        }
         public void Loop()
         {
             if (!startRan)
             {
                 return;
+            }
+            if (loop)
+            {
+                SendCustomEventDelayedFrames(nameof(Loop), 1);
             }
             newAngle = Vector3.Angle(particles.transform.forward, Vector3.up);
             overflowChanged = overflow != (Utilities.IsValid(waterSource) && waterSource.juiceAmount > waterSource.maxJuice);
@@ -291,6 +329,10 @@ namespace MMMaellon.Juice
             {
                 col.enabled = true;
             }
+            if (Utilities.IsValid(parentSync))
+            {
+                loop = parentSync.state != SmartObjectSync.STATE_SLEEPING;
+            }
         }
 
         public bool _instakillParticles;
@@ -326,6 +368,20 @@ namespace MMMaellon.Juice
                 return;
             }
             instakillParticles = other.layer == gameObject.layer;
+        }
+
+        public override void OnChangeState(SmartObjectSync sync, int oldState, int newState)
+        {
+            loop = newState != SmartObjectSync.STATE_SLEEPING || particles.isPlaying;
+        }
+
+        public override void OnChangeOwner(SmartObjectSync sync, VRCPlayerApi oldOwner, VRCPlayerApi newOwner)
+        {
+            if (!Utilities.IsValid(parentSync))
+            {
+                parentSync = sync;
+                loop = sync.state != SmartObjectSync.STATE_SLEEPING;
+            }
         }
     }
 }

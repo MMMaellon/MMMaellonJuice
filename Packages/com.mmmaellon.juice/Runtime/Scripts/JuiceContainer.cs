@@ -14,8 +14,9 @@ namespace MMMaellon.Juice
         [HideInInspector]
         public JuicePour[] pours;
         public float syncCooldown = 0.25f;
-        Animator containerAnimator;
-        string animatorParameter = "juice";
+        public Animator containerAnimator;
+        public string animatorParameter = "juice";
+        public bool optimizeAnimator = true;
 
         [UdonSynced(UdonSyncMode.None), FieldChangeCallback(nameof(color))]
         public Color _color = new Color(1, 1, 1, 0);
@@ -69,9 +70,14 @@ namespace MMMaellon.Juice
                     RequestSerialization();
                 }
                 _juiceAmount = value;
+                loop = true;
                 if (value <= 0)
                 {
                     _juiceAmount = 0;
+                }
+                if (Utilities.IsValid(juiceMesh))
+                {
+                    juiceMesh.enabled = _juiceAmount > 0;
                 }
             }
         }
@@ -101,6 +107,10 @@ namespace MMMaellon.Juice
                 if (!parameterMatch)
                 {
                     containerAnimator = null;
+                }
+                if (optimizeAnimator)
+                {
+                    containerAnimator.enabled = false;
                 }
             }
             if (Utilities.IsValid(juiceMesh))
@@ -149,10 +159,16 @@ namespace MMMaellon.Juice
                     {
                         Loop();
                     }
+
+                    if (optimizeAnimator)
+                    {
+                        containerAnimator.enabled = value;
+                    }
                 }
             }
         }
 
+        float animatorValue;
         public void Loop()
         {
             if (!loop)
@@ -164,15 +180,15 @@ namespace MMMaellon.Juice
                 loop = false;
                 return;
             }
-
-            if (Mathf.Approximately(containerAnimator.GetFloat(animatorParameter), juiceAmount))
+            animatorValue = juiceAmount / maxJuice;
+            if (Mathf.Approximately(containerAnimator.GetFloat(animatorParameter), animatorValue))
             {
-                containerAnimator.SetFloat(animatorParameter, juiceAmount);
+                containerAnimator.SetFloat(animatorParameter, animatorValue);
                 loop = false;
             }
             else
             {
-                containerAnimator.SetFloat(animatorParameter, Mathf.Lerp(containerAnimator.GetFloat(animatorParameter), juiceAmount, 0.1f));
+                containerAnimator.SetFloat(animatorParameter, Mathf.Lerp(containerAnimator.GetFloat(animatorParameter), animatorValue, 0.1f));
                 SendCustomEventDelayedFrames(nameof(Loop), 1);
             }
         }

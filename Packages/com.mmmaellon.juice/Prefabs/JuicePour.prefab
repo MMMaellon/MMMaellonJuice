@@ -3742,7 +3742,7 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 3073
+      m_Bits: 133153
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
@@ -5044,7 +5044,8 @@ MonoBehaviour:
   receiverColliders: []
   waterSource: {fileID: 0}
   _color: {r: 1, g: 1, b: 1, a: 0}
-  hasLiquid: 1
+  _hasLiquid: 1
+  parentSync: {fileID: 0}
   _instakillParticles: 0
 --- !u!114 &1387618734716856064
 MonoBehaviour:
@@ -8862,7 +8863,7 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 1024
+      m_Bits: 32
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
