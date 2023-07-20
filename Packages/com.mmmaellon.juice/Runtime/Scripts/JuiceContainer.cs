@@ -160,7 +160,7 @@ namespace MMMaellon.Juice
                         Loop();
                     }
 
-                    if (optimizeAnimator)
+                    if (optimizeAnimator && Utilities.IsValid(containerAnimator))
                     {
                         containerAnimator.enabled = value;
                     }
