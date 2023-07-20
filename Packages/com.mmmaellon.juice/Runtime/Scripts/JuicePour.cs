@@ -204,7 +204,7 @@ namespace MMMaellon.Juice
                 if (_loop != value)
                 {
                     _loop = value;
-                    if (value && loop)
+                    if (value)
                     {
                         SendCustomEventDelayedFrames(nameof(Loop), 1);
                     }
