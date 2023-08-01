@@ -8,6 +8,7 @@ Shader "Mochie/WaterClipped" {
 		_BackfaceTint("Backface Tint", Color) = (1,1,1,1)
 		_MainTex("Base Color", 2D) = "white" {}
 		_ClipTex("Clip Texture", 2D) = "white" {}
+		_ClipDirection("Backface Tint", Color) = (1,1,1,1)
 		_MainTexScroll("Scrolling", Vector) = (0,0.1,0,0)
 		_BaseColorOffset("Parallax Offset", Float) = 0
 		[Toggle(_BASECOLOR_STOCHASTIC_ON)]_BaseColorStochasticToggle("Stochastic Sampling", Int) = 0
@@ -195,7 +196,7 @@ Shader "Mochie/WaterClipped" {
 		}
 		Stencil {
 			Ref [_StencilRef]
-			Comp Always
+			Comp Equal
 			Pass Replace
 			Fail Keep
 			ZFail Keep
@@ -204,11 +205,44 @@ Shader "Mochie/WaterClipped" {
 			Tags {"LightMode"="Always"}
 			"_MWGrab"
 		}
-		ZWrite [_ZWrite]
-		Cull [_CullMode]
+		Pass{
+			Blend Zero One
+			ZWrite Off
+			ZTest LEqual
+			Cull Off
+			Stencil {
+				Ref 69
+				Comp Always
+				Pass Replace
+				Fail Keep
+				ZFail Keep
+			}
+            CGPROGRAM
+			#pragma vertex vert
+            #pragma fragment frag
+			#include "WaterDefines.cginc"
+			#include "WaterVert.cginc"
+			
+            fixed4 frag(v2f i) : SV_Target
+            {
+                // Return transparent color (black with alpha 0)
+				clip(lerp(-1, 1, i.worldPos.y < 1));
+                return fixed4(0, 0, 0, 0);
+            }
+			ENDCG
+		}
         Pass {
+			ZWrite [_ZWrite]
+			Cull [_CullMode]
 			Tags {"LightMode"="ForwardBase"}
 			Blend [_SrcBlend] [_DstBlend]
+			Stencil {
+				Ref 69
+				Comp Equal
+				Pass Replace
+				Fail Keep
+				ZFail Keep
+			}
             CGPROGRAM
 			#pragma vertex vert
             #pragma fragment frag
@@ -250,8 +284,17 @@ Shader "Mochie/WaterClipped" {
         }
 
 		Pass {
+			ZWrite [_ZWrite]
+			Cull [_CullMode]
 			Tags {"LightMode"="ForwardAdd"}
 			Blend SrcAlpha One
+			Stencil {
+				Ref 69
+				Comp Equal
+				Pass Replace
+				Fail Keep
+				ZFail Keep
+			}
             CGPROGRAM
 			#pragma vertex vert
             #pragma fragment frag

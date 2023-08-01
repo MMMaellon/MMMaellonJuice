@@ -5,7 +5,34 @@ float bla[2]; // Literally the stupidest thing I've ever had to do (part 1)
 
 sampler2D _ClipTex;
 
+float3x3 constructTransitionMatrix(float3 forwardDir, float3 upDir)
+{
+    float3 rightDir = cross(forwardDir, upDir);
+    float3x3 result = {rightDir, upDir, forwardDir};
+    return result;
+}
+
+float IntersectRayPlane(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, float3 shapeUpDir)
+{
+    // Transform line origin and direction from world space to the shape space
+    float3x3 transitionMatrix = constructTransitionMatrix(float3(0,0,0), shapeUpDir);
+    float3 lO = mul(transitionMatrix, lineOrigin - shapeOrigin);
+    float3 lD = mul(transitionMatrix, lineDir);
+
+    float denominator = lD.y;
+	if(abs(denominator) < 0.0001){
+		return -1;
+	}
+    float numerator = lO.y;
+    
+    return - numerator / denominator;
+}
+
+#if DEPTH_EFFECTS_ENABLED
+fragOut frag(v2f i, bool isFrontFace: SV_IsFrontFace) {
+#else
 float4 frag(v2f i, bool isFrontFace: SV_IsFrontFace) : SV_Target {
+#endif
 
 	UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
@@ -147,8 +174,8 @@ float4 frag(v2f i, bool isFrontFace: SV_IsFrontFace) : SV_Target {
 	mainTexUV += normalMap.xy * _BaseColorDistortionStrength;
 	ParallaxOffset(i, mainTexUV, _BaseColorOffset, isFrontFace);
 	float4 surfaceTint = _Color;
-	if (!isFrontFace)
-		surfaceTint = _BackfaceTint;
+	// if (!isFrontFace)
+	// 	surfaceTint = _BackfaceTint;
 
 	#if BASECOLOR_STOCHASTIC_ENABLED
 		float4 mainTex = tex2Dstoch(_MainTex, mainTexUV) * surfaceTint;
@@ -258,11 +285,13 @@ float4 frag(v2f i, bool isFrontFace: SV_IsFrontFace) : SV_Target {
 		i.normal = normalize(dot(i.normal, i.normal) >= 1.01 ? i.cNormal : i.normal);
 		float3 normalDir = normalize(normalMap.x * i.tangent + normalMap.y * i.binormal + normalMap.z * i.normal);
 		if (!isFrontFace)
+			//MMMAELLON TODO
+			//CHANGE NORMAL HERE
 			normalDir = -normalDir;
 		float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos);
 		float NdotV = abs(dot(normalDir, viewDir));
-		if (!isFrontFace)
-			col *= lerp(_AngleTint, 1, NdotV);
+		// if (!isFrontFace)
+		// 	col *= lerp(_AngleTint, 1, NdotV);
 
 		float2 roughnessMapUV = detailUV;
 		if (_DetailTextureMode != 1)
@@ -408,8 +437,42 @@ float4 frag(v2f i, bool isFrontFace: SV_IsFrontFace) : SV_Target {
 	UNITY_APPLY_FOG(i.fogCoord, col);
 	clip(-0.1 + tex2D(_ClipTex, mainTexUV).r);
 	// col.rgb = mainTex.rgb;
-	return col;
+	
+	//MMMAELLON
+	//we define the depth here
+	#if DEPTH_EFFECTS_ENABLED
+    	fragOut output;
+		output.color = col;
+		float3 up = float3(0, 1, 0);
+		float3 offset = float3(0, 1, 0);
+		float intersection = IntersectRayPlane( _WorldSpaceCameraPos.xyz, normalize(i.worldPos - _WorldSpaceCameraPos.xyz), up, offset);
+		float4 clipSpace = UnityWorldToClipPos(i.worldPos);
+		float actualDepth = clipSpace.z / clipSpace.w;
+		float backgroundDepth = LinearEyeDepth(MOCHIE_SAMPLE_TEX2D_SCREENSPACE(_CameraDepthTexture, screenUV));
+		// if(intersection > 0 && !isFrontFace){
+		// 	float3 intersectionPoint = normalize(i.worldPos - _WorldSpaceCameraPos) * intersection + _WorldSpaceCameraPos;
+		// 	float4 clipIntersection = UnityWorldToClipPos(intersectionPoint);
+		// 	float intersectionDepth = clipIntersection.z / clipIntersection.w;
+		// 	// output.depth = lerp(_ZBufferParams.z, _ZBufferParams.z, isFrontFace);
+			
+			
+		// 	// output.depth = GetDepth(i, screenUV) < 0;
+		// 	output.depth = lerp(actualDepth, intersectionDepth, GetDepth(i, screenUV) < 0);
+		// 	output.depth = actualDepth;
+		// } else {
+		// 	// float backDepth = mul(UNITY_MATRIX_VP, float4(intersectionPoint, 1.0)).z;
+		// 	// output.depth = saturate(lerp(actualDepth, _ZBufferParams.z, isFrontFace));
+		// 	output.depth = actualDepth;
+		// 	// clip(-1);
+		// }
+		output.color = lerp(output.color, float4(0,255,0,1), backgroundDepth == 0.2);
+		output.depth = actualDepth;
+		return output;
+	#else
+		return col;
+	#endif
 }
+
 
 #include "WaterTess.cginc"
 

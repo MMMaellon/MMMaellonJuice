@@ -215,6 +215,11 @@ struct v2f {
 	UNITY_VERTEX_OUTPUT_STEREO
 };
 
+struct fragOut{
+    fixed4 color : SV_Target;
+    float depth : SV_DEPTH;
+};
+
 #include "WaterSSR.cginc"
 #include "WaterFunctions.cginc"
 

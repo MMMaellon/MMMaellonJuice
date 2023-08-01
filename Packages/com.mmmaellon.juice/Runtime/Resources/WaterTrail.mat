@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: WaterTrail
   m_Shader: {fileID: 4800000, guid: 3cf7fe93dc0469540ab0c758a32db7cb, type: 3}
-  m_ShaderKeywords: _EDGEFADE_ON _FLOW_ON _NORMALMAP_1_ON _REFLECTIONS_ON _SPECULAR_ON
+  m_ShaderKeywords: _DEPTH_EFFECTS_ON _FLOW_ON _NORMALMAP_1_ON _REFLECTIONS_ON _SPECULAR_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -143,7 +143,7 @@ Material:
     - _AreaLitRoughnessMult: 1
     - _AreaLitStrength: 1
     - _AreaLitToggle: 0
-    - _BackfaceReflections: 0
+    - _BackfaceReflections: 1
     - _BaseColorDistortionStrength: 0.1
     - _BaseColorOffset: 0
     - _BaseColorStochasticToggle: 0
@@ -160,9 +160,9 @@ Material:
     - _CausticsSurfaceFade: 100
     - _CausticsThreshold: 0
     - _CausticsToggle: 0
-    - _CullMode: 2
+    - _CullMode: 0
     - _Cutoff: 0.5
-    - _DepthEffects: 0
+    - _DepthEffects: 1
     - _DetailNormalMapScale: 1
     - _DetailNormalStrength: 1
     - _DetailTextureMode: 0
@@ -171,7 +171,7 @@ Material:
     - _EdgeFadeOffset: 0.5
     - _EdgeFadePower: 200
     - _EdgeFadeSSR: 0.1
-    - _EdgeFadeToggle: 1
+    - _EdgeFadeToggle: 0
     - _EmissionMapStochasticToggle: 0
     - _EmissionToggle: 0
     - _FlowMapUV: 0
@@ -261,12 +261,13 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _AngleTint: {r: 1, g: 1, b: 1, a: 1}
-    - _BackfaceTint: {r: 1, g: 1, b: 1, a: 1}
+    - _BackfaceTint: {r: 0, g: 0, b: 0, a: 1}
     - _BlendNoiseScale: {r: 2, g: 2, b: 0, a: 0}
     - _CausticsColor: {r: 1, g: 1, b: 1, a: 1}
     - _CausticsDistortionSpeed: {r: 0.1, g: 0.1, b: 0, a: 0}
     - _CausticsRotation: {r: -20, g: 0, b: 20, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 0}
+    - _ClipDirection: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 0.49019608}
     - _DetailBaseColorTint: {r: 1, g: 1, b: 1, a: 1}
     - _DetailScroll: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

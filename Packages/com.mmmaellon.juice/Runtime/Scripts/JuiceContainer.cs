@@ -30,17 +30,10 @@ namespace MMMaellon.Juice
                     return;
                 }
                 _color = value;
-                foreach (JuicePour pour in pours)
-                {
-                    pour.color = color;
-                }
+                colorloop = true;
                 if (Networking.LocalPlayer.IsOwner(gameObject))
                 {
                     RequestSerialization();
-                }
-                if (Utilities.IsValid(juiceMat))
-                {
-                    juiceMat.color = value;
                 }
             }
         }
@@ -118,7 +111,7 @@ namespace MMMaellon.Juice
                 juiceMat = juiceMesh.material;
             }
             color = color;
-
+            colorValue = color;
             //jank fix
             startingJuice = juiceAmount;
             juiceAmount = maxJuice;
@@ -139,12 +132,12 @@ namespace MMMaellon.Juice
             {
                 color = newColor;
             }
-            else
+            else if (lastSerialize + syncCooldown < Time.timeSinceLevelLoad)
             {
-                color = Color.Lerp(color, newColor, Mathf.Lerp(0.25f, 0.01f, juiceAmount/maxJuice));
+                color = Color.Lerp(color, newColor, Mathf.Lerp(0.25f, 0.05f, juiceAmount / maxJuice));
             }
         }
-        
+
         [FieldChangeCallback(nameof(loop))]
         bool _loop;
         public bool loop
@@ -190,6 +183,60 @@ namespace MMMaellon.Juice
             {
                 containerAnimator.SetFloat(animatorParameter, Mathf.Lerp(containerAnimator.GetFloat(animatorParameter), animatorValue, 0.1f));
                 SendCustomEventDelayedFrames(nameof(Loop), 1);
+            }
+        }
+
+
+        [FieldChangeCallback(nameof(colorloop))]
+        bool _colorloop;
+        public bool colorloop
+        {
+            get => _colorloop;
+            set
+            {
+                if (_colorloop != value)
+                {
+                    _colorloop = value;
+                    if (value)
+                    {
+                        colorLoop();
+                    }
+                }
+            }
+        }
+
+        Color colorValue;
+        public void colorLoop()
+        {
+            if (!colorloop)
+            {
+                return;
+            }
+            colorValue = Color.Lerp(colorValue, color, 0.1f);
+
+            if (Mathf.Approximately(color.r, colorValue.r) && Mathf.Approximately(color.g, colorValue.g) && Mathf.Approximately(color.b, colorValue.b))
+            {
+                foreach (JuicePour pour in pours)
+                {
+                    pour.color = color;
+                }
+                if (Utilities.IsValid(juiceMat))
+                {
+                    juiceMat.color = color;
+                }
+                colorloop = false;
+            }
+            else
+            {
+                foreach (JuicePour pour in pours)
+                {
+                    pour.color = colorValue;
+                }
+                if (Utilities.IsValid(juiceMat))
+                {
+                    juiceMat.color = colorValue;
+                }
+                SendCustomEventDelayedFrames(nameof(colorLoop), 1);
             }
         }
     }

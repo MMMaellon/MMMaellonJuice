@@ -110,6 +110,10 @@ v2f vert (
 
 	UNITY_TRANSFER_FOG(o, o.pos);
 	// UNITY_TRANSFER_SHADOW(o, v.uv1);
+	//MMMAELLON
+#if DEPTH_EFFECTS_ENABLED
+	COMPUTE_EYEDEPTH(o.pos.z);
+#endif
 	return o;
 }
 
