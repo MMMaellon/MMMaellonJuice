@@ -443,12 +443,12 @@ float4 frag(v2f i, bool isFrontFace: SV_IsFrontFace) : SV_Target {
 	#if DEPTH_EFFECTS_ENABLED
     	fragOut output;
 		output.color = col;
-		float3 up = float3(0, 1, 0);
-		float3 offset = float3(0, 1, 0);
-		float intersection = IntersectRayPlane( _WorldSpaceCameraPos.xyz, normalize(i.worldPos - _WorldSpaceCameraPos.xyz), up, offset);
+		// float3 up = float3(0, 1, 0);
+		// float3 offset = float3(0, 1, 0);
+		// float intersection = IntersectRayPlane( _WorldSpaceCameraPos.xyz, normalize(i.worldPos - _WorldSpaceCameraPos.xyz), up, offset);
 		float4 clipSpace = UnityWorldToClipPos(i.worldPos);
 		float actualDepth = clipSpace.z / clipSpace.w;
-		float backgroundDepth = LinearEyeDepth(MOCHIE_SAMPLE_TEX2D_SCREENSPACE(_CameraDepthTexture, screenUV));
+		// float backgroundDepth = LinearEyeDepth(MOCHIE_SAMPLE_TEX2D_SCREENSPACE(_CameraDepthTexture, screenUV));
 		// if(intersection > 0 && !isFrontFace){
 		// 	float3 intersectionPoint = normalize(i.worldPos - _WorldSpaceCameraPos) * intersection + _WorldSpaceCameraPos;
 		// 	float4 clipIntersection = UnityWorldToClipPos(intersectionPoint);
@@ -465,7 +465,7 @@ float4 frag(v2f i, bool isFrontFace: SV_IsFrontFace) : SV_Target {
 		// 	output.depth = actualDepth;
 		// 	// clip(-1);
 		// }
-		output.color = lerp(output.color, float4(0,255,0,1), backgroundDepth == 0.2);
+		// output.color = lerp(output.color, float4(0,255,0,1), backgroundDepth == 0.2);
 		output.depth = actualDepth;
 		return output;
 	#else
