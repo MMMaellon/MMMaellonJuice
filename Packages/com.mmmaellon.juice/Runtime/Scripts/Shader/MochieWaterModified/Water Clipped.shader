@@ -194,55 +194,55 @@ Shader "Mochie/WaterClipped" {
 			"ForceNoShadowCasting"="True"
 			"IgnoreProjector"="True"
 		}
-		Stencil {
-			Ref [_StencilRef]
-			Comp Equal
-			Pass Replace
-			Fail Keep
-			ZFail Keep
-		}
+		// Stencil {
+		// 	Ref [_StencilRef]
+		// 	Comp Equal
+		// 	Pass Replace
+		// 	Fail Keep
+		// 	ZFail Keep
+		// }
 		GrabPass {
 			Tags {"LightMode"="Always"}
 			"_MWGrab"
 		}
-		Pass{
-			Blend Zero One
-			ZWrite Off
-			ZTest LEqual
-			Cull Off
-			Stencil {
-				Ref 69
-				Comp Always
-				Pass Replace
-				Fail Keep
-				ZFail Keep
-			}
-            CGPROGRAM
-			#pragma vertex vert
-            #pragma fragment frag
-			#include "WaterDefines.cginc"
-			#include "WaterVert.cginc"
+		// Pass{
+		// 	Blend Zero One
+		// 	ZWrite Off
+		// 	ZTest LEqual
+		// 	Cull Off
+		// 	Stencil {
+		// 		Ref 69
+		// 		Comp Always
+		// 		Pass Replace
+		// 		Fail Keep
+		// 		ZFail Keep
+		// 	}
+        //     CGPROGRAM
+		// 	#pragma vertex vert
+        //     #pragma fragment frag
+		// 	#include "WaterDefines.cginc"
+		// 	#include "WaterVert.cginc"
 			
-            fixed4 frag(v2f i) : SV_Target
-            {
-                // Return transparent color (black with alpha 0)
-				clip(lerp(-1, 1, i.worldPos.y < 1));
-                return fixed4(0, 0, 0, 0);
-            }
-			ENDCG
-		}
+        //     fixed4 frag(v2f i) : SV_Target
+        //     {
+        //         // Return transparent color (black with alpha 0)
+		// 		clip(lerp(-1, 1, i.worldPos.y < 1));
+        //         return fixed4(0, 0, 0, 0);
+        //     }
+		// 	ENDCG
+		// }
         Pass {
 			ZWrite [_ZWrite]
 			Cull [_CullMode]
 			Tags {"LightMode"="ForwardBase"}
 			Blend [_SrcBlend] [_DstBlend]
-			Stencil {
-				Ref 69
-				Comp Equal
-				Pass Replace
-				Fail Keep
-				ZFail Keep
-			}
+			// Stencil {
+			// 	Ref 69
+			// 	Comp Equal
+			// 	Pass Replace
+			// 	Fail Keep
+			// 	ZFail Keep
+			// }
             CGPROGRAM
 			#pragma vertex vert
             #pragma fragment frag
@@ -288,13 +288,13 @@ Shader "Mochie/WaterClipped" {
 			Cull [_CullMode]
 			Tags {"LightMode"="ForwardAdd"}
 			Blend SrcAlpha One
-			Stencil {
-				Ref 69
-				Comp Equal
-				Pass Replace
-				Fail Keep
-				ZFail Keep
-			}
+			// Stencil {
+			// 	Ref 69
+			// 	Comp Equal
+			// 	Pass Replace
+			// 	Fail Keep
+			// 	ZFail Keep
+			// }
             CGPROGRAM
 			#pragma vertex vert
             #pragma fragment frag
