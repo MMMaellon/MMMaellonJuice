@@ -287,7 +287,6 @@ namespace MMMaellon.Juice
 
         public void MoveWaterDown()
         {
-            Debug.LogWarning("Move Water Down " + power);
             projectedDown = particles.transform.InverseTransformDirection(Vector3.ProjectOnPlane(Vector3.down, particles.transform.forward));
             projectedDown = (particles.transform.localRotation * projectedDown.normalized * (1 - power) / 40);//hardcoded
             projectedDown.x = particles.transform.localScale.x != 0 ? projectedDown.x / particles.transform.localScale.x : projectedDown.x;
