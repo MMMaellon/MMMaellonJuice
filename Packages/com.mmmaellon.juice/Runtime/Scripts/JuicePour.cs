@@ -371,6 +371,11 @@ namespace MMMaellon.Juice
         public override void OnChangeState(SmartObjectSync sync, int oldState, int newState)
         {
             loop = newState != SmartObjectSync.STATE_SLEEPING || particles.isPlaying;
+            if (newState == SmartObjectSync.STATE_TELEPORTING && sync.rigid.isKinematic)
+            {
+                loop = false;
+                Loop();
+            }
         }
 
         public override void OnChangeOwner(SmartObjectSync sync, VRCPlayerApi oldOwner, VRCPlayerApi newOwner)
