@@ -278,10 +278,7 @@ namespace MMMaellon.Juice
             }
             else
             {
-                if (particles.isPlaying)
-                {
-                    TurnOff();
-                }
+                TurnOff();
             }
         }
 
@@ -329,7 +326,7 @@ namespace MMMaellon.Juice
             }
             if (Utilities.IsValid(parentSync))
             {
-                loop = parentSync.state != SmartObjectSync.STATE_SLEEPING;
+                loop = parentSync.state != SmartObjectSync.STATE_SLEEPING && parentSync.state != SmartObjectSync.STATE_TELEPORTING;
             }
         }
 
