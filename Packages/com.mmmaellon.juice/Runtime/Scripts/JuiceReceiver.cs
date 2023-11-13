@@ -22,7 +22,7 @@ namespace MMMaellon.Juice
             {
                 return;
             }
-            waterSource.ChangeJuiceAmount(Mathf.Max(0.1f, otherPour.pourRate * otherPour.power));
+            waterSource.ChangeJuiceAmount(otherPour.pourRate * otherPour.powerSquare);
             waterSource.ChangeJuiceColor(otherPour.color);
         }
 

@@ -14,6 +14,8 @@ namespace MMMaellon.Juice
         [System.NonSerialized]
         ParticleSystem.MainModule main;
         [System.NonSerialized]
+        ParticleSystem.EmissionModule emission;
+        [System.NonSerialized]
         ParticleSystem.TrailModule trail;
         [System.NonSerialized]
         ParticleSystem.ShapeModule shape;
@@ -68,56 +70,44 @@ namespace MMMaellon.Juice
             }
         }
         // float powerRoot;
-        float powerSquare;
+        [System.NonSerialized]
+        public float powerSquare;
         public float power
         {
             get => _power;
             set
             {
-                _power = value;
+                if (_power > 0)
+                {
+                    _power = value > 0 ? Mathf.Max(minimumPourAmount, value) : 0;
+                }
+                else
+                {
+                    _power = value > minimumPourAmount ? value : 0;
+                }
                 if (!startRan)
                 {
                     return;
                 }
-                powerSquare = Mathf.Max(minimumPourAmount, Mathf.Pow(value, 2));
-                if (value < minimumPourAmount && value > 0f)
-                {
-                    newStartSize = main.startSize;
-                    newStartSize.constant = startSize.constant * powerSquare;
-                    newStartSize.constantMax = startSize.constantMax * powerSquare;
-                    newStartSize.constantMin = startSize.constantMin * powerSquare;
-                    main.startSize = newStartSize;
-                    splashParticles.transform.localScale = Vector3.Lerp(splashStartScale * minimumPourAmount, splashStartScale, powerSquare);
+                powerSquare = Mathf.Max(minimumPourAmount, Mathf.Pow(_power, 2));
+                newStartSize = main.startSize;
+                newStartSize.constant = startSize.constant * powerSquare;
+                newStartSize.constantMax = startSize.constantMax * powerSquare;
+                newStartSize.constantMin = startSize.constantMin * powerSquare;
+                main.startSize = newStartSize;
+                splashParticles.transform.localScale = Vector3.Lerp(splashStartScale * minimumPourAmount, splashStartScale, powerSquare);
 
-                    newStartSpeed = main.startSpeed;
-                    newStartSpeed.constant = startSpeed.constant * minimumPourAmount;
-                    newStartSpeed.constantMax = startSpeed.constantMax * minimumPourAmount;
-                    newStartSpeed.constantMin = startSpeed.constantMin * minimumPourAmount;
-                    main.startSpeed = newStartSpeed;
+                newStartSpeed = main.startSpeed;
+                newStartSpeed.constant = startSpeed.constant * _power;
+                newStartSpeed.constantMax = startSpeed.constantMax * _power;
+                newStartSpeed.constantMin = startSpeed.constantMin * _power;
+                main.startSpeed = newStartSpeed;
 
-                    audioSource.volume = minimumPourAmount;
-                } else
-                {
-                    newStartSize = main.startSize;
-                    newStartSize.constant = startSize.constant * powerSquare;
-                    newStartSize.constantMax = startSize.constantMax * powerSquare;
-                    newStartSize.constantMin = startSize.constantMin * powerSquare;
-                    main.startSize = newStartSize;
-                    splashParticles.transform.localScale = Vector3.Lerp(splashStartScale * minimumPourAmount, splashStartScale, powerSquare);
-
-                    newStartSpeed = main.startSpeed;
-                    newStartSpeed.constant = startSpeed.constant * value;
-                    newStartSpeed.constantMax = startSpeed.constantMax * value;
-                    newStartSpeed.constantMin = startSpeed.constantMin * value;
-                    main.startSpeed = newStartSpeed;
-
-                    audioSource.volume = value;
-                }
-
+                audioSource.volume = _power;
             }
         }
 
-        public Color _color = new Color(1,1,1,0);
+        public Color _color = new Color(1, 1, 1, 0);
         public Color color
         {
             get => _color;
@@ -134,7 +124,8 @@ namespace MMMaellon.Juice
         }
 
         public bool _hasLiquid = true;
-        public bool hasLiquid{
+        public bool hasLiquid
+        {
             get => _hasLiquid;
             set
             {
@@ -154,6 +145,7 @@ namespace MMMaellon.Juice
         void Start()
         {
             main = particles.main;
+            emission = particles.emission;
             shape = particles.shape;
             trail = particles.trails;
             collision = particles.collision;
@@ -267,11 +259,11 @@ namespace MMMaellon.Juice
                 {
                     if (overflow)
                     {
-                        waterSource.ChangeJuiceAmount(-pourRate * Mathf.Max(minimumPourAmount, powerSquare) * 2);
+                        waterSource.ChangeJuiceAmount(-pourRate * powerSquare * 2);
                     }
                     else
                     {
-                        waterSource.ChangeJuiceAmount(-pourRate * Mathf.Max(minimumPourAmount, powerSquare));
+                        waterSource.ChangeJuiceAmount(-pourRate * powerSquare * Time.deltaTime * emission.rateOverTimeMultiplier);
                     }
                     waterSource.ChangeJuiceColor(color);
                 }
@@ -318,8 +310,15 @@ namespace MMMaellon.Juice
                 return;
             }
             trail.attachRibbonsToTransform = false;
-            audioSource.SetScheduledEndTime(AudioSettings.dspTime + 0.2f);//let audio play for a little longer
-            particles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            if (particles.isPlaying)
+            {
+                audioSource.SetScheduledEndTime(AudioSettings.dspTime + 0.2f);//let audio play for a little longer
+                particles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+            else
+            {
+                audioSource.Stop();
+            }
             foreach (Collider col in receiverColliders)
             {
                 col.enabled = true;
