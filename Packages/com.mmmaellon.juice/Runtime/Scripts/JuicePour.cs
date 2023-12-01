@@ -1,4 +1,5 @@
 ﻿
+
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
@@ -25,6 +26,7 @@ namespace MMMaellon.Juice
         Material splashMaterial;
         public float _minAngle = 30f;
         public float _maxAngle = 120f;
+        public float angleBuffer = 10f;
         public float pourRate = 5f;
         public float minimumPourAmount = 0.1f;
         public float pourAngleShifting = 60f;
@@ -213,7 +215,15 @@ namespace MMMaellon.Juice
             }
             newAngle = Vector3.Angle(particles.transform.forward, Vector3.up);
             overflowChanged = overflow != (Utilities.IsValid(waterSource) && waterSource.juiceAmount > waterSource.maxJuice);
-            tippedChanged = tipped != (newAngle > minAngle);
+            // tippedChanged = tipped != (newAngle > minAngle);
+            if(tipped){
+                newAngle += angleBuffer;
+                if(newAngle <= minAngle){
+                    tippedChanged = true;
+                }
+            } else if (newAngle > minAngle) {
+                tippedChanged = true;
+            }
             if (overflowChanged)
             {
                 overflow = !overflow;
@@ -261,7 +271,7 @@ namespace MMMaellon.Juice
                     {
                         waterSource.ChangeJuiceAmount(-pourRate * powerSquare * 2);
                     }
-                    else
+                    else if(particles.particleCount > 1) //need at least two particles to be visible
                     {
                         waterSource.ChangeJuiceAmount(-pourRate * powerSquare * Time.deltaTime * emission.rateOverTimeMultiplier);
                     }
