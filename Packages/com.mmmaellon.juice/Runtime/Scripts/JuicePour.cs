@@ -216,13 +216,11 @@ namespace MMMaellon.Juice
             newAngle = Vector3.Angle(particles.transform.forward, Vector3.up);
             overflowChanged = overflow != (Utilities.IsValid(waterSource) && waterSource.juiceAmount > waterSource.maxJuice);
             // tippedChanged = tipped != (newAngle > minAngle);
-            if(tipped){
+             if(tipped){
                 newAngle += angleBuffer;
-                if(newAngle <= minAngle){
-                    tippedChanged = true;
-                }
-            } else if (newAngle > minAngle) {
-                tippedChanged = true;
+                tippedChanged = newAngle <= minAngle;
+            } else {
+                tippedChanged = newAngle > minAngle;
             }
             if (overflowChanged)
             {
