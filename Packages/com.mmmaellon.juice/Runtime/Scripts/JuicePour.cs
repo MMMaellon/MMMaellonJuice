@@ -335,6 +335,9 @@ namespace MMMaellon.Juice
             {
                 loop = parentSync.state != SmartObjectSync.STATE_SLEEPING && parentSync.state != SmartObjectSync.STATE_TELEPORTING;
             }
+            if(waterSource){
+                waterSource.RequestSerialization();
+            }
         }
 
         public bool _instakillParticles;
