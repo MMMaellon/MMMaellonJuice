@@ -196,21 +196,24 @@ namespace MMMaellon.Juice
                 if (_loop != value)
                 {
                     _loop = value;
-                    if (value)
+                    if (value && last_loop < Time.renderedFrameCount)
                     {
+                        last_loop = Time.renderedFrameCount;
                         SendCustomEventDelayedFrames(nameof(Loop), 1);
                     }
                 }
             }
         }
+        int last_loop = -1001;
         public void Loop()
         {
             if (!startRan)
             {
                 return;
             }
-            if (loop)
+            if (loop && last_loop < Time.renderedFrameCount)
             {
+                last_loop = Time.renderedFrameCount;
                 SendCustomEventDelayedFrames(nameof(Loop), 1);
             }
             newAngle = Vector3.Angle(particles.transform.forward, Vector3.up);
