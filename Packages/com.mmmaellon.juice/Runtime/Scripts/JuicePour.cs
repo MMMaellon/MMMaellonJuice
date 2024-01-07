@@ -199,7 +199,7 @@ namespace MMMaellon.Juice
                     if (value && last_loop < Time.renderedFrameCount)
                     {
                         last_loop = Time.renderedFrameCount;
-                        SendCustomEventDelayedFrames(nameof(Loop), 1);
+                        SendCustomEventDelayedFrames(nameof(Loop), 2);
                     }
                 }
             }
