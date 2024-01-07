@@ -85,7 +85,7 @@ namespace MMMaellon.Juice
                 }
                 else
                 {
-                    _power = value > minimumPourAmount ? value : 0;
+                    _power = Mathf.Max(minimumPourAmount, value);
                 }
                 if (!startRan)
                 {
