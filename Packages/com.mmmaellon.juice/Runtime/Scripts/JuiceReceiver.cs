@@ -10,7 +10,7 @@ namespace MMMaellon.Juice
     {
         public JuiceContainer waterSource;
         public bool accuratePour = true;
-        public float loopDelay = 0.5f;
+        public float pourCooldown = 0.5f;
         JuicePour otherPour;
         float startAmount;
         float otherStartAmount;
@@ -23,29 +23,31 @@ namespace MMMaellon.Juice
                 return;
             }
             newPour = other.GetComponentInParent<JuicePour>();
-            if (!Utilities.IsValid(newPour) || newPour.waterSource == waterSource)
+            if (!Utilities.IsValid(newPour) || newPour.waterSource == waterSource || !Utilities.IsValid(waterSource))
             {
                 return;
             }
-            lastParticle = Time.timeSinceLevelLoad;
-            if (waterSource)
+            waterSource.ChangeJuiceColor(newPour.color);
+            if (accuratePour)
             {
-                waterSource.ChangeJuiceColor(newPour.color);
-                if (newPour.waterSource && accuratePour)
+                if (lastParticle + pourCooldown > Time.timeSinceLevelLoad || !Utilities.IsValid(otherPour) || otherPour != newPour)
                 {
-                    if (!loop && newPour != otherPour)
-                    {
-                        otherPour = newPour;
-                        startAmount = waterSource.juiceAmount;
-                        otherStartAmount = otherPour.waterSource.juiceAmount;
-                    }
-                    loop = true;
+                    //hasn't had a collision in a while. Treat this as a new pour
+                    otherPour = newPour;
+                    startAmount = waterSource.juiceAmount;
+                    otherStartAmount = otherPour.waterSource.juiceAmount;
+                    waterSource.ChangeJuiceAmount(newPour.pourRate * newPour.powerSquare);
                 }
                 else
                 {
-                    waterSource.ChangeJuiceAmount(newPour.pourRate * newPour.powerSquare);
+                    waterSource.juiceAmount = startAmount + (otherStartAmount - otherPour.waterSource.juiceAmount);
                 }
             }
+            else
+            {
+                waterSource.ChangeJuiceAmount(newPour.pourRate * newPour.powerSquare);
+            }
+            lastParticle = Time.timeSinceLevelLoad;
         }
 
         JuiceSourceTrigger otherWater;
@@ -66,39 +68,5 @@ namespace MMMaellon.Juice
             waterSource.color = otherWater.color;
         }
 
-        int last_loop = -1001;
-        [System.NonSerialized]
-        public bool _loop = false;
-        public bool loop
-        {
-            get => _loop;
-            set
-            {
-                if (value != _loop)
-                {
-                    _loop = value;
-                    if (value && last_loop < Time.renderedFrameCount)
-                    {
-                        last_loop = Time.renderedFrameCount;
-                        SendCustomEventDelayedFrames(nameof(Loop), 1);
-                    }
-                }
-            }
-        }
-        public void Loop()
-        {
-            if (!otherPour || !otherPour.waterSource || lastParticle + loopDelay < Time.timeSinceLevelLoad)
-            {
-                loop = false;
-                return;
-            }
-            if (loop && last_loop < Time.timeSinceLevelLoad)
-            {
-                last_loop = Time.renderedFrameCount;
-                SendCustomEventDelayedFrames(nameof(Loop), 1);
-            }
-
-            waterSource.juiceAmount = startAmount + (otherStartAmount - otherPour.waterSource.juiceAmount);
-        }
     }
 }
