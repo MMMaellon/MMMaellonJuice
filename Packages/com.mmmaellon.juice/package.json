@@ -1,7 +1,7 @@
 {
     "name": "com.mmmaellon.juice",
     "displayName": "MMMaellon Juice",
-    "version": "1.4.5",
+    "version": "1.4.6",
     "description": "Add some nice looking liquids to your VRChat world. Comes with prefabs for pourable containers and custom shaders.",
     "url": "https://github.com/MMMaellon/MMMaellonJuice.git",
     "dependencies": {},

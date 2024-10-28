@@ -28,7 +28,7 @@ namespace MMMaellon.Juice
                 return;
             }
             waterSource.ChangeJuiceColor(newPour.color);
-            if (accuratePour && otherPour.waterSource)
+            if (accuratePour && newPour.waterSource)
             {
                 if (lastParticle + pourCooldown > Time.timeSinceLevelLoad || !Utilities.IsValid(otherPour) || otherPour != newPour)
                 {
