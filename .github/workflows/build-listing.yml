@@ -26,8 +26,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-jobs:
-  
   # Build the VPM Listing Website and deploy to GitHub Pages
   build-listing:
     name: build-listing
